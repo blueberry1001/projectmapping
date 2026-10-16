@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "SHA-256",
+  "normalization": "nfkc-katakana-space-lower-v2",
+  "id": "step2",
+  "number": 2,
+  "groups": [
+    [
+      "c577a3ac19984c8135ce011eefd6af422b84987db4835bb35fecdaf911ddad6e",
+      "4560460260c7d8bd734cafe3b1a9d2ed4c34ab6feb467fd24ed6a7d0a7163db5",
+      "78a83a9f2e56e81a7dc2067e3851c2a6a00430edd1209a6bbabbf35845d99824",
+      "6303f64334646f7e938b6c08ffcced660242986aa0aa50facf9dc44306acb58d"
+    ],
+    [
+      "dabb4aaf07a293a3ec0bb1dc9ae49268bd77ae7204a3e5485a3d238fa3f5f57e",
+      "0e8597a9d5c1b9c07b1f8ab54c432439c326b81ed28d372c568749ba7de8c7d2",
+      "dd00b5ec6510e52bd61ef875caadc214cb48cd3fa4578391547dbbcf327e0031",
+      "89e21d20dfc14fff48a0d0ef27142420dd0af52b51ea0c01bfd78a6d76dcdf9a",
+      "33764de039b67957b87f2dbd5e0f77905d6a3342e58bacb6bea77e0bf914822a"
+    ],
+    [
+      "4f80945edf547027655e4fb1e7671a6b0a82a06d8c9d42847a687ca6fa406528",
+      "e08418a6b3f894db6b2c4854ce06ac6603da227ff5bcf241371de262e6767e72"
+    ],
+    [
+      "4f6b0ebcd7dac064c6807bfcfad0322acdf1558c2c96bee715d044626664f386",
+      "eda8157c4c7025af29b9fc0dcf1cde1e4ec3263125eaa4d298e762d127fbb5b9"
+    ],
+    [
+      "f7a3417887c2dcb6b77ad710673fe45585f47d58ac58ccf4d91d2eeca8e45854",
+      "d50b7443e55645bde4ffa6c3ecdc2796cb8088ddc1ce84d9edd7e84d8d67018e"
+    ]
+  ],
+  "treasure": null,
+  "next": "step3"
+}

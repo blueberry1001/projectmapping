@@ -1,0 +1,175 @@
+import { toKatakana, normalizeAnswer, checkAnswers, NORMALIZATION } from './shared/answers.mjs';
+const $ = selector => document.querySelector(selector);
+const colors = ['#007c54', '#0072ad', '#c3af37', '#394c5c', '#bb2c18'];
+const icons = {
+  neutral: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>',
+  correct: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
+  incorrect: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+};
+let content, entry, storageKey, progress = { started:false, begun:false, solved:[], opened:[] };
+const rendered = new Set();
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const el = (tag, className, text) => { const node = document.createElement(tag); if(className) node.className = className; if(text !== undefined) node.textContent = text; return node; };
+function button(label, fn, className = 'primary') {
+  const node = el('button', className, label); node.type = 'button';
+  if (className.includes('primary')) node.append(el('span', 'arrow'));
+  node.addEventListener('click', fn); return node;
+}
+function save() {
+  try { localStorage.setItem(storageKey, JSON.stringify(progress)); }
+  catch { $('#global-status').textContent = '進行状況を保存できません。このページを閉じずに続けてください。'; }
+}
+function show(node, focus = true) {
+  if (!focus) return;
+  node.classList.add('reveal');
+  requestAnimationFrame(() => { node.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'start' });
+    const heading = node.querySelector('h2,h3'); if(heading) { heading.tabIndex = -1; heading.focus({preventScroll:true}); }
+  });
+}
+async function json(path) { const response = await fetch(path, {cache:'no-store'}); if(!response.ok) throw new Error('load'); return response.json(); }
+function media(config, parent) {
+  const figure = el('div', 'area');
+  const placeholder = () => figure.replaceChildren(el('div', 'area-placeholder', config.alt));
+  if (config.src) { const img = el('img'); img.alt = config.alt; img.src = config.src; img.addEventListener('error', placeholder, {once:true}); figure.append(img); }
+  else placeholder();
+  parent.append(figure);
+}
+function renderIntro(scroll = true) {
+  if ($('#introduction')) return;
+  const section = el('section', 'chapter introduction'); section.id = 'introduction';
+  section.append(el('h2', 'chapter-heading', 'STEP 0'), el('p', 'chapter-body', content.introduction));
+  const start = button('謎解きをはじめる', async () => {
+    start.disabled = true;
+    try { await renderStep(entry.first, true); progress.begun = true; save(); start.hidden = true; }
+    catch { start.disabled = false; error.textContent = '読み込めませんでした。もう一度お試しください。'; }
+  });
+  const error = el('p', 'form-status'); error.setAttribute('role','status');
+  start.hidden = progress.begun;
+  section.append(start,error); $('#journey').append(section); show(section,scroll);
+}
+function row(index, treasure = false) {
+  const wrap = el('div', 'answer-row' + (treasure ? ' treasure' : ''));
+  const input = el('input'); input.type = 'text'; input.maxLength = 100; input.autocomplete = 'off'; input.spellcheck = false;
+  input.setAttribute('autocapitalize','off'); input.setAttribute('aria-label', treasure ? '宝のありか' : `答え ${index + 1}`);
+  input.enterKeyHint = 'next'; input.required = true;
+  const result = el('span','result'); result.innerHTML = icons.neutral;
+  wrap.append(input,result); return wrap;
+}
+function renderForm(data, section, complete) {
+  const form = el('form','answer-form'); form.noValidate = true;
+  form.setAttribute('aria-label', `STEP ${data.number}の回答`);
+  const fields = el('div','fields');
+  for(let i=0;i<data.groups.length;i++) fields.append(row(i));
+  form.append(fields);
+  if(data.treasure) { form.append(el('p','treasure-label','宝のありか')); form.append(row(data.groups.length,true)); }
+  const rows = [...form.querySelectorAll('.answer-row')], inputs = rows.map(r=>r.querySelector('input'));
+  inputs.at(-1).enterKeyHint = 'done';
+  const status = el('p','form-status'); status.id = `${data.id}-status`; status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
+  inputs.forEach(input=>input.setAttribute('aria-describedby',status.id));
+  const submit = el('button','primary','回答する'); submit.type = 'submit'; submit.append(el('span','arrow'));
+  form.append(status,submit);
+  let busy = false, composing = false;
+  function refresh() { submit.disabled = busy || composing; }
+  function convertInput(input) {
+    if (!(input instanceof HTMLInputElement)) return;
+    const start = toKatakana(input.value.slice(0, input.selectionStart ?? 0)).length;
+    const end = toKatakana(input.value.slice(0, input.selectionEnd ?? 0)).length;
+    const converted = toKatakana(input.value);
+    if (input.value !== converted) { input.value = converted; input.setSelectionRange(start, end); }
+  }
+  form.addEventListener('compositionstart',()=>{composing=true;refresh();});
+  form.addEventListener('compositionend',event=>{composing=false;convertInput(event.target);refresh();});
+  form.addEventListener('input', event => {
+    if (!composing && !event.isComposing) convertInput(event.target);
+    // Unordered matching is collective: editing one row invalidates the previous allocation.
+    rows.forEach(r=>{ delete r.dataset.result; const input=r.querySelector('input'); input.removeAttribute('aria-invalid'); r.querySelector('.result').innerHTML=icons.neutral; r.querySelector('.result').removeAttribute('aria-label'); });
+    status.textContent = ''; refresh();
+  });
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); if(submit.disabled || busy || composing) return;
+    const empty = inputs.find(input => !normalizeAnswer(input.value));
+    if (empty) {
+      const dialog = $('#incomplete-dialog');
+      dialog.addEventListener('close', () => empty.focus(), { once:true });
+      dialog.showModal();
+      return;
+    }
+    busy = true; refresh(); inputs.forEach(i=>i.readOnly=true); submit.firstChild.textContent = '確認中…';
+    try {
+      const values = inputs.slice(0,data.groups.length).map(i=>i.value);
+      const result = await checkAnswers(values,data.groups,inputs.at(-1).value,data.treasure);
+      rows.forEach((r,i)=>{ const key=result[i]?'correct':'incorrect'; r.dataset.result=key; r.querySelector('input').setAttribute('aria-invalid',String(!result[i])); const icon=r.querySelector('.result'); icon.innerHTML=icons[key]; icon.setAttribute('role','img'); icon.setAttribute('aria-label',result[i]?'正解':'不正解'); });
+      if(result.every(Boolean)) {
+        status.textContent = ''; progress.solved.push(data.id); save();
+        submit.hidden = true; inputs.forEach(i=>i.readOnly=true); complete(true);
+        return;
+      }
+      status.textContent = '';
+    } catch { status.textContent = '判定できませんでした。もう一度お試しください。'; }
+    finally { if(!progress.solved.includes(data.id)) { busy=false; inputs.forEach(i=>i.readOnly=false); submit.firstChild.textContent='回答する'; refresh(); } }
+  });
+  section.append(form);
+}
+async function renderStep(id, scroll = true) {
+  if(rendered.has(id)) return;
+  if(!/^step[1-9]\d*$/.test(id)) throw new Error('id');
+  const data = await json(`./data/${id}.json`);
+  if(data.algorithm!=='SHA-256'||data.normalization!==NORMALIZATION||!Array.isArray(data.groups)) throw new Error('schema');
+  const copy = content.steps[id]; if(!copy) throw new Error('content');
+  const section = el('section','chapter'); section.id=id; section.dataset.number=data.number;
+  section.style.setProperty('--step',colors[(data.number-1)%colors.length]);
+  if(data.number===3) section.style.setProperty('--step-ink','#373431');
+  section.append(el('h2','chapter-heading',`STEP ${data.number}`),el('p','chapter-body',copy.body));
+  const complete = (animate = false) => {
+    if(section.querySelector('.completion')) return;
+    const completion = el('div','completion'); completion.append(el('p','complete-note','正解'));
+    if(copy.area) media(copy.area,completion);
+    const status = el('p','form-status'); status.setAttribute('role','status');
+    const next = button('次へ',async()=>{
+      next.disabled = true; status.textContent='';
+      try { if(data.next) await renderStep(data.next,true); else renderClear(true);
+        progress.opened.push(data.id); save(); next.hidden=true;
+      } catch { status.textContent='読み込めませんでした。もう一度お試しください。';next.disabled=false; }
+    },'primary continue');
+    next.hidden=progress.opened.includes(data.id);
+    completion.append(next,status); section.append(completion);
+    if(animate) { completion.classList.add('reveal'); completion.scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'nearest'}); }
+  };
+  if(progress.solved.includes(id)) complete(); else renderForm(data,section,complete);
+  $('#journey').append(section); rendered.add(id); show(section,scroll);
+  if(progress.solved.includes(id) && progress.opened.includes(id)) { if(data.next) await renderStep(data.next,false); else renderClear(false); }
+}
+function renderClear(scroll) {
+  if($('#clear')) return;
+  const section = el('section','chapter clear'); section.id='clear';
+  section.append(el('h2','clear-title','CLEAR'),el('p','chapter-body',content.clear.body));
+  media(content.clear.image,section);
+  const links = el('div','clear-links');
+  for(const [key,label,placeholder] of [['postUrl','クリアをポストする','[クリアポストリンク]'],['surveyUrl','アンケートに答える','[アンケート]']]) {
+    const url=content.clear[key];
+    if(url && /^https:\/\//.test(url)) { const a=el('a','pending-link',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';links.append(a); }
+    else links.append(el('p','pending-link',placeholder));
+  }
+  section.append(links);$('#journey').append(section);show(section,scroll);
+}
+$('#contents-confirmed').addEventListener('change',()=>{ $('#start').disabled=!entry||!$('#contents-confirmed').checked; });
+$('#start').addEventListener('click',()=>{progress.started=true;save();$('#start').hidden=true;$('#contents-confirmed').disabled=true;$('#reset').hidden=false;renderIntro();});
+$('#reset').addEventListener('click',()=>$('#reset-dialog').showModal());
+$('#reset-dialog').addEventListener('close',()=>{ if($('#reset-dialog').returnValue==='reset') { try{localStorage.removeItem(storageKey);}catch{} location.reload(); } });
+async function init() {
+  $('#retry').hidden=true;$('#global-status').textContent='';$('#start').disabled=true;
+  try {
+    [content,entry]=await Promise.all([json('./content.json'),json('./data/entry.json')]);
+    storageKey=`projectmapping:${entry.version}`;
+    try { const saved=JSON.parse(localStorage.getItem(storageKey));
+      if(saved && typeof saved.started==='boolean' && typeof saved.begun==='boolean' && Array.isArray(saved.solved) && Array.isArray(saved.opened)) progress=saved;
+    } catch {}
+    document.title=content.title;$('.site-header a').textContent=content.title;$('#welcome-title').textContent=content.title;
+    $('.intro-copy').textContent=content.thanks;$('.contents p').textContent=content.contents;
+    $('#journey').replaceChildren(); rendered.clear();
+    if(progress.started) { $('#contents-confirmed').checked=true;$('#contents-confirmed').disabled=true;$('#start').hidden=true;$('#reset').hidden=false;renderIntro(false);if(progress.begun) await renderStep(entry.first,false); }
+    else $('#start').disabled=!$('#contents-confirmed').checked;
+  } catch { $('#global-status').textContent='ページを読み込めませんでした。接続を確認して再試行してください。';$('#retry').hidden=false; }
+}
+$('#retry').addEventListener('click',init);
+init();

@@ -1,0 +1,48 @@
+{
+  "title": "[タイトル]",
+  "thanks": "[購入ありがとう的な文]",
+  "contents": "[内容物一覧]",
+  "introduction": "[Step0〜導入〜の本文]",
+  "steps": {
+    "step1": {
+      "body": "[Step1の本文]",
+      "area": {
+        "src": null,
+        "alt": "[組み立て後のArea1の画像]"
+      }
+    },
+    "step2": {
+      "body": "[Step2の本文]",
+      "area": {
+        "src": null,
+        "alt": "[組み立て後のArea2の画像]"
+      }
+    },
+    "step3": {
+      "body": "[Step3の本文]",
+      "area": {
+        "src": null,
+        "alt": "[組み立て後のArea3の画像]"
+      }
+    },
+    "step4": {
+      "body": "[Step4の本文]",
+      "area": {
+        "src": null,
+        "alt": "[組み立て後のArea4の画像]"
+      }
+    },
+    "step5": {
+      "body": "[Step5の本文]"
+    }
+  },
+  "clear": {
+    "body": "[クリアの文]",
+    "image": {
+      "src": null,
+      "alt": "[クリア画像]"
+    },
+    "postUrl": null,
+    "surveyUrl": null
+  }
+}

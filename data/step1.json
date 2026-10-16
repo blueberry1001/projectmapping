@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "SHA-256",
+  "normalization": "nfkc-katakana-space-lower-v2",
+  "id": "step1",
+  "number": 1,
+  "groups": [
+    [
+      "99eb2b0393dec0d9967866a55236df99daa64ce6b0d31d97c3dfd024d15193b2"
+    ],
+    [
+      "5912876546ae02acd351fc9f6fd92d3a11cec1ca74802b92bf713957f327577f",
+      "8e369f0623315f5f584dc0ba187bf29157d2596c871c9fd2dd30453d09144d2f"
+    ],
+    [
+      "b66458d8dde7c2be7ce5dac0adf047e6d79df0e3cc6b53e4e89d7e0abf1b7fa8",
+      "863a6fd1e32cc5eff0a750760bf755735dc8a9e156df0a66b635cfc023fb51c0",
+      "1f7778a12f9cc8b327e784611ff3a7225f06fc20060ab66b1b64a9735f0fdc61"
+    ],
+    [
+      "c313bfaa8f635a30a8c8d86a153149cc2a94f22605010e7f5902fa79f44af2ef",
+      "3f02a97fabc7e0303fa936fe4f9be71ee1b86c5f9aaf9c996cc9209cace6be94"
+    ],
+    [
+      "f5536ab4b93e05084af17fdbc6c4efce7013b1a82eff42f59d1c84058f5d040b"
+    ]
+  ],
+  "treasure": null,
+  "next": "step2"
+}
