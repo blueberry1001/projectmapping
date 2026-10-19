@@ -35,52 +35,97 @@ function media(config, parent) {
   parent.append(figure);
 }
 
-// Every character occupies its final space before the reveal starts.
+// Reserve the full text layout, then reveal one block at a time in document order.
+const textQueue = [];
+let activeText = null;
+function advanceText() {
+  if (activeText) return;
+  const job = textQueue.find(item => !item.done);
+  if (!job || !job.ready) return;
+  activeText = job;
+  job.node.classList.add('is-reading');
+  const finish = () => {
+    if (job.done) return;
+    clearTimeout(job.timer);
+    job.node.classList.add('is-complete');
+    job.done = true;
+    activeText = null;
+    advanceText();
+  };
+  job.finish = finish;
+  job.node.lastElementChild.addEventListener('animationend', finish, {once:true});
+  // Also complete if animation events are suppressed (background tab or motion setting).
+  job.timer = setTimeout(finish, job.duration + 80);
+}
 const textObserver = new IntersectionObserver(entries => {
   for (const item of entries) {
     if (!item.isIntersecting) continue;
-    item.target.classList.add('is-reading');
+    const index = textQueue.findIndex(job => job.node === item.target);
+    // Scrolling ahead also schedules preceding blocks, so the queue cannot stall offscreen.
+    for (let i = 0; i <= index; i++) textQueue[i].ready = true;
     textObserver.unobserve(item.target);
   }
+  advanceText();
 }, { threshold: 0 });
-const segmenter = new Intl.Segmenter('ja', { granularity: 'grapheme' });
-function revealText(node, text, animate) {
-  if (!animate || reducedMotion.matches || /^\[.*\]$/.test(text)) {
-    node.textContent = text; return;
+reducedMotion.addEventListener('change', () => {
+  if (!reducedMotion.matches) return;
+  for (const job of textQueue) {
+    clearTimeout(job.timer);
+    job.done = true;
+    job.node.classList.add('is-complete');
   }
+  activeText = null;
+  textObserver.disconnect();
+});
+const segmenter = new Intl.Segmenter('ja', { granularity: 'grapheme' });
+function revealText(node, text, animate, colors = []) {
+  const animated = animate && !reducedMotion.matches && !/^\[.*\]$/.test(text);
   const accessible = el('span', 'sr-only', text);
   const visual = el('span', 'typed-text');
   visual.setAttribute('aria-hidden', 'true');
-  const chars = [...segmenter.segment(text)].map(part => part.segment);
+  const chars = [...segmenter.segment(text)];
   const interval = Math.min(12, 3000 / Math.max(1, chars.length));
-  chars.forEach((char, i) => {
-    const span = el('span', 'typed-char', char);
-    span.style.setProperty('--letter-delay', `${i * interval}ms`);
+  chars.forEach(({segment:char,index}, i) => {
+    const span = el('span', animated ? 'typed-char' : '', char);
+    const color = colors.find(range => index >= range.start && index < range.end);
+    if (color) span.style.color = color.color;
+    if (animated) span.style.setProperty('--letter-delay', `${i * interval}ms`);
     visual.append(span);
   });
   node.append(accessible, visual);
-  textObserver.observe(visual);
+  if (animated && chars.length) {
+    textQueue.push({node:visual, duration:(chars.length - 1) * interval + 1, ready:false, done:false});
+    textObserver.observe(visual);
+  }
 }
 function story(blocks, animate = true) {
   const body = el('div', 'chapter-body story');
   for (const block of typeof blocks === 'string' ? [{type:'paragraph', text:blocks}] : blocks) {
     if (block.type === 'image') { media({src:null,alt:block.text},body); continue; }
-    if (block.type === 'heading') { body.append(el('h3','story-heading',block.text)); continue; }
+    if (block.type === 'heading') {
+      const heading = el('h3','story-heading');
+      revealText(heading,block.text,animate,block.colors);
+      body.append(heading); continue;
+    }
     if (block.type === 'list') {
       const list = el('ul','story-list');
-      for (const text of block.items) { const item=el('li'); revealText(item,text,animate); list.append(item); }
+      for (const value of block.items) {
+        const item=el('li'), data=typeof value==='string'?{text:value}:value;
+        revealText(item,data.text,animate,data.colors); list.append(item);
+      }
       body.append(list); continue;
     }
     const paragraph=el('p',block.text.startsWith('※')?'story-notice':'');
-    revealText(paragraph,block.text,animate); body.append(paragraph);
+    revealText(paragraph,block.text,animate,block.colors); body.append(paragraph);
   }
   return body;
 }
 
-function renderIntro(scroll = true) {
+function renderIntro(scroll = true, animate = scroll) {
   if ($('#introduction')) return;
   const section = el('section', 'chapter introduction'); section.id = 'introduction';
-  section.append(el('h2', 'chapter-heading', 'Prologue'), story(content.introduction, scroll));
+  section.append(el('h2', 'chapter-heading', 'Prologue'), story(content.introduction, animate));
+  if (content.introductionColor) section.querySelector('h2').style.color=content.introductionColor;
   const start = button('謎解きをはじめる', async () => {
     start.disabled = true;
     try { await renderStep(entry.first, true); progress.begun = true; save(); start.hidden = true; }
@@ -155,6 +200,7 @@ async function renderStep(id, scroll = true) {
   section.style.setProperty('--step',colors[(data.number-1)%colors.length]);
   if(data.number===3) section.style.setProperty('--step-ink','#373431');
   section.append(el('h2','chapter-heading',`Area${data.number}`),story(copy.body, scroll));
+  if (copy.headingColor) section.querySelector('h2').style.color=copy.headingColor;
   const complete = (animate = false) => {
     if(section.querySelector('.completion')) return;
     const completion = el('div','completion'); completion.append(el('p','complete-note','正解'));
@@ -187,23 +233,25 @@ function renderClear(scroll) {
   }
   section.append(links);$('#journey').append(section);show(section,scroll);
 }
-$('#contents-confirmed').addEventListener('change',()=>{ $('#start').disabled=!entry||!$('#contents-confirmed').checked; });
-$('#start').addEventListener('click',()=>{progress.started=true;save();$('#start').hidden=true;$('#contents-confirmed').disabled=true;$('#reset').hidden=false;renderIntro();});
 $('#reset').addEventListener('click',()=>$('#reset-dialog').showModal());
 $('#reset-dialog').addEventListener('close',()=>{ if($('#reset-dialog').returnValue==='reset') { try{localStorage.removeItem(storageKey);}catch{} location.reload(); } });
 async function init() {
-  $('#retry').hidden=true;$('#global-status').textContent='';$('#start').disabled=true;
+  $('#retry').hidden=true;$('#global-status').textContent='';
   try {
     [content,entry]=await Promise.all([json('./content.json'),json('./data/entry.json')]);
     storageKey=`projectmapping:${entry.version}`;
     try { const saved=JSON.parse(localStorage.getItem(storageKey));
       if(saved && typeof saved.started==='boolean' && typeof saved.begun==='boolean' && Array.isArray(saved.solved) && Array.isArray(saved.opened)) progress=saved;
     } catch {}
-    document.title=content.title;$('.site-header a').textContent=content.title;$('#welcome-title').textContent=content.title;
-    $('.intro-copy').textContent=content.thanks;$('.contents p').textContent=content.contents;
+    document.title=content.title;
     $('#journey').replaceChildren(); rendered.clear();
-    if(progress.started) { $('#contents-confirmed').checked=true;$('#contents-confirmed').disabled=true;$('#start').hidden=true;$('#reset').hidden=false;renderIntro(false);if(progress.begun) await renderStep(entry.first,false); }
-    else $('#start').disabled=!$('#contents-confirmed').checked;
+    textObserver.disconnect();
+    for (const job of textQueue) clearTimeout(job.timer);
+    textQueue.length = 0; activeText = null;
+    renderIntro(false, !progress.started);
+    progress.started = true; save();
+    $('#reset').hidden=false;
+    if(progress.begun) await renderStep(entry.first,false);
   } catch { $('#global-status').textContent='ページを読み込めませんでした。接続を確認して再試行してください。';$('#retry').hidden=false; }
 }
 $('#retry').addEventListener('click',init);
