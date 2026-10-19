@@ -1,4 +1,4 @@
-import { toKatakana, normalizeAnswer, checkAnswers, NORMALIZATION } from './shared/answers.mjs';
+import { normalizeAnswer, checkAnswers, NORMALIZATION } from './shared/answers.mjs';
 const $ = selector => document.querySelector(selector);
 const colors = ['#007c54', '#0072ad', '#c3af37', '#394c5c', '#bb2c18'];
 const icons = {
@@ -34,10 +34,53 @@ function media(config, parent) {
   else placeholder();
   parent.append(figure);
 }
+
+// Every character occupies its final space before the reveal starts.
+const textObserver = new IntersectionObserver(entries => {
+  for (const item of entries) {
+    if (!item.isIntersecting) continue;
+    item.target.classList.add('is-reading');
+    textObserver.unobserve(item.target);
+  }
+}, { threshold: 0 });
+const segmenter = new Intl.Segmenter('ja', { granularity: 'grapheme' });
+function revealText(node, text, animate) {
+  if (!animate || reducedMotion.matches || /^\[.*\]$/.test(text)) {
+    node.textContent = text; return;
+  }
+  const accessible = el('span', 'sr-only', text);
+  const visual = el('span', 'typed-text');
+  visual.setAttribute('aria-hidden', 'true');
+  const chars = [...segmenter.segment(text)].map(part => part.segment);
+  const interval = Math.min(12, 3000 / Math.max(1, chars.length));
+  chars.forEach((char, i) => {
+    const span = el('span', 'typed-char', char);
+    span.style.setProperty('--letter-delay', `${i * interval}ms`);
+    visual.append(span);
+  });
+  node.append(accessible, visual);
+  textObserver.observe(visual);
+}
+function story(blocks, animate = true) {
+  const body = el('div', 'chapter-body story');
+  for (const block of typeof blocks === 'string' ? [{type:'paragraph', text:blocks}] : blocks) {
+    if (block.type === 'image') { media({src:null,alt:block.text},body); continue; }
+    if (block.type === 'heading') { body.append(el('h3','story-heading',block.text)); continue; }
+    if (block.type === 'list') {
+      const list = el('ul','story-list');
+      for (const text of block.items) { const item=el('li'); revealText(item,text,animate); list.append(item); }
+      body.append(list); continue;
+    }
+    const paragraph=el('p',block.text.startsWith('※')?'story-notice':'');
+    revealText(paragraph,block.text,animate); body.append(paragraph);
+  }
+  return body;
+}
+
 function renderIntro(scroll = true) {
   if ($('#introduction')) return;
   const section = el('section', 'chapter introduction'); section.id = 'introduction';
-  section.append(el('h2', 'chapter-heading', 'STEP 0'), el('p', 'chapter-body', content.introduction));
+  section.append(el('h2', 'chapter-heading', 'Prologue'), story(content.introduction, scroll));
   const start = button('謎解きをはじめる', async () => {
     start.disabled = true;
     try { await renderStep(entry.first, true); progress.begun = true; save(); start.hidden = true; }
@@ -57,7 +100,7 @@ function row(index, treasure = false) {
 }
 function renderForm(data, section, complete) {
   const form = el('form','answer-form'); form.noValidate = true;
-  form.setAttribute('aria-label', `STEP ${data.number}の回答`);
+  form.setAttribute('aria-label', `Area${data.number}の回答`);
   const fields = el('div','fields');
   for(let i=0;i<data.groups.length;i++) fields.append(row(i));
   form.append(fields);
@@ -70,17 +113,9 @@ function renderForm(data, section, complete) {
   form.append(status,submit);
   let busy = false, composing = false;
   function refresh() { submit.disabled = busy || composing; }
-  function convertInput(input) {
-    if (!(input instanceof HTMLInputElement)) return;
-    const start = toKatakana(input.value.slice(0, input.selectionStart ?? 0)).length;
-    const end = toKatakana(input.value.slice(0, input.selectionEnd ?? 0)).length;
-    const converted = toKatakana(input.value);
-    if (input.value !== converted) { input.value = converted; input.setSelectionRange(start, end); }
-  }
   form.addEventListener('compositionstart',()=>{composing=true;refresh();});
-  form.addEventListener('compositionend',event=>{composing=false;convertInput(event.target);refresh();});
-  form.addEventListener('input', event => {
-    if (!composing && !event.isComposing) convertInput(event.target);
+  form.addEventListener('compositionend',()=>{composing=false;refresh();});
+  form.addEventListener('input', () => {
     // Unordered matching is collective: editing one row invalidates the previous allocation.
     rows.forEach(r=>{ delete r.dataset.result; const input=r.querySelector('input'); input.removeAttribute('aria-invalid'); r.querySelector('.result').innerHTML=icons.neutral; r.querySelector('.result').removeAttribute('aria-label'); });
     status.textContent = ''; refresh();
@@ -119,7 +154,7 @@ async function renderStep(id, scroll = true) {
   const section = el('section','chapter'); section.id=id; section.dataset.number=data.number;
   section.style.setProperty('--step',colors[(data.number-1)%colors.length]);
   if(data.number===3) section.style.setProperty('--step-ink','#373431');
-  section.append(el('h2','chapter-heading',`STEP ${data.number}`),el('p','chapter-body',copy.body));
+  section.append(el('h2','chapter-heading',`Area${data.number}`),story(copy.body, scroll));
   const complete = (animate = false) => {
     if(section.querySelector('.completion')) return;
     const completion = el('div','completion'); completion.append(el('p','complete-note','正解'));
@@ -142,7 +177,7 @@ async function renderStep(id, scroll = true) {
 function renderClear(scroll) {
   if($('#clear')) return;
   const section = el('section','chapter clear'); section.id='clear';
-  section.append(el('h2','clear-title','CLEAR'),el('p','chapter-body',content.clear.body));
+  section.append(el('h2','clear-title','Epilogue'),story(content.clear.body, scroll));
   media(content.clear.image,section);
   const links = el('div','clear-links');
   for(const [key,label,placeholder] of [['postUrl','クリアをポストする','[クリアポストリンク]'],['surveyUrl','アンケートに答える','[アンケート]']]) {
