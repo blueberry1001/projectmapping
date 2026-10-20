@@ -132,7 +132,15 @@ function story(blocks, animate = true) {
         range.end > passage.offset && range.start < passage.offset + passage.text.length
       ).map(range => ({...range, start:Math.max(0,range.start-passage.offset),
         end:Math.min(passage.text.length,range.end-passage.offset)}));
-      revealText(paragraph,passage.text,animate,colors);
+      let text = passage.text;
+      if (passage.dialogue) {
+        const removed = new Set([...text.matchAll(/^「|」$/gm)].map(match => match.index));
+        const offsets = [0];
+        for (let i = 0; i < text.length; i++) offsets.push(offsets[i] + (removed.has(i) ? 0 : 1));
+        text = text.replace(/^「|」$/gm, '');
+        for (const range of colors) { range.start = offsets[range.start]; range.end = offsets[range.end]; }
+      }
+      revealText(paragraph,text,animate,colors);
       body.append(paragraph);
     }
   }
