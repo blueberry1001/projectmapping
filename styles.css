@@ -30,3 +30,6 @@ h1{font-size:clamp(28px,8vw,46px);overflow-wrap:anywhere}
 
 .story-dialogue{position:relative;margin-left:8px;padding:16px;border:1px solid var(--sub);border-radius:4px;background:var(--surface)}
 .story-dialogue::before{content:'';position:absolute;left:-7px;top:22px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--sub);border-bottom:1px solid var(--sub);transform:rotate(45deg)}
+
+/* Balance each source line independently so a short tail is not stranded below it. */
+.typed-line{display:block;white-space:normal;line-break:strict;word-break:normal;text-wrap:balance}

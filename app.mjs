@@ -53,7 +53,7 @@ function advanceText() {
     advanceText();
   };
   job.finish = finish;
-  job.node.lastElementChild.addEventListener('animationend', finish, {once:true});
+  [...job.node.querySelectorAll('.typed-char')].at(-1).addEventListener('animationend', finish, {once:true});
   // Also complete if animation events are suppressed (background tab or motion setting).
   job.timer = setTimeout(finish, job.duration + 80);
 }
@@ -85,12 +85,15 @@ function revealText(node, text, animate, colors = []) {
   visual.setAttribute('aria-hidden', 'true');
   const chars = [...segmenter.segment(text)];
   const interval = Math.min(12, 3000 / Math.max(1, chars.length));
+  let line = el('span', 'typed-line');
+  visual.append(line);
   chars.forEach(({segment:char,index}, i) => {
+    if (char === '\n') { line = el('span', 'typed-line'); visual.append(line); return; }
     const span = el('span', animated ? 'typed-char' : '', char);
     const color = colors.find(range => index >= range.start && index < range.end);
     if (color) span.style.color = color.color;
     if (animated) span.style.setProperty('--letter-delay', `${i * interval}ms`);
-    visual.append(span);
+    line.append(span);
   });
   node.append(accessible, visual);
   if (animated && chars.length) {
