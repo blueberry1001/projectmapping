@@ -115,8 +115,26 @@ function story(blocks, animate = true) {
       }
       body.append(list); continue;
     }
-    const paragraph=el('p',block.text.startsWith('※')?'story-notice':'');
-    revealText(paragraph,block.text,animate,block.colors); body.append(paragraph);
+    // Keep source wording and line breaks; separate speech from narration even in mixed paragraphs.
+    const passages = [];
+    let offset = 0;
+    for (const line of block.text.split('\n')) {
+      const dialogue = line.startsWith('「');
+      const previous = passages.at(-1);
+      if (previous && previous.dialogue === dialogue) previous.text += '\n' + line;
+      else passages.push({text:line, dialogue, offset});
+      offset += line.length + 1;
+    }
+    for (const passage of passages) {
+      const className = passage.dialogue ? 'story-dialogue' : passage.text.startsWith('※') ? 'story-notice' : '';
+      const paragraph = el('p',className);
+      const colors = (block.colors || []).filter(range =>
+        range.end > passage.offset && range.start < passage.offset + passage.text.length
+      ).map(range => ({...range, start:Math.max(0,range.start-passage.offset),
+        end:Math.min(passage.text.length,range.end-passage.offset)}));
+      revealText(paragraph,passage.text,animate,colors);
+      body.append(paragraph);
+    }
   }
   return body;
 }
