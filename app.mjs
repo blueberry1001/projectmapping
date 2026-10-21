@@ -6,7 +6,7 @@ const icons = {
   correct: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
   incorrect: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
 };
-let content, entry, storageKey, progress = { started:false, begun:false, solved:[], opened:[] };
+let content, entry, storageKey, progress = { started:false, begun:false, solved:[], opened:[], answers:{} };
 const rendered = new Set();
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const el = (tag, className, text) => { const node = document.createElement(tag); if(className) node.className = className; if(text !== undefined) node.textContent = text; return node; };
@@ -171,7 +171,7 @@ function row(index, treasure = false) {
 }
 function renderForm(data, section, complete) {
   const form = el('form','answer-form'); form.noValidate = true;
-  form.setAttribute('aria-label', `Area${data.number}の回答`);
+  form.setAttribute('aria-label', `Area${data.number}の解答`);
   const fields = el('div','fields');
   for(let i=0;i<data.groups.length;i++) fields.append(row(i));
   form.append(fields);
@@ -180,8 +180,27 @@ function renderForm(data, section, complete) {
   inputs.at(-1).enterKeyHint = 'done';
   const status = el('p','form-status'); status.id = `${data.id}-status`; status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
   inputs.forEach(input=>input.setAttribute('aria-describedby',status.id));
-  const submit = el('button','primary','回答する'); submit.type = 'submit'; submit.append(el('span','arrow'));
+  const submit = el('button','primary','解答する'); submit.type = 'submit'; submit.append(el('span','arrow'));
   form.append(status,submit);
+  if (progress.solved.includes(data.id)) {
+    const saved = progress.answers[data.id];
+    const hasAnswers = Array.isArray(saved) && saved.length === inputs.length &&
+      saved.every(value => typeof value === 'string' && value.length <= 100);
+    inputs.forEach((input, i) => {
+      input.readOnly = true;
+      if (!hasAnswers) return;
+      input.value = saved[i];
+      input.setAttribute('aria-invalid','false');
+      rows[i].dataset.result = 'correct';
+      const icon = rows[i].querySelector('.result');
+      icon.innerHTML = icons.correct;
+      icon.setAttribute('role','img'); icon.setAttribute('aria-label','正解');
+    });
+    if (!hasAnswers) status.textContent = 'この端末には以前の解答が保存されていません。';
+    submit.hidden = true;
+    section.append(form);
+    return;
+  }
   let busy = false, composing = false;
   function refresh() { submit.disabled = busy || composing; }
   form.addEventListener('compositionstart',()=>{composing=true;refresh();});
@@ -206,13 +225,14 @@ function renderForm(data, section, complete) {
       const result = await checkAnswers(values,data.groups,inputs.at(-1).value,data.treasure);
       rows.forEach((r,i)=>{ const key=result[i]?'correct':'incorrect'; r.dataset.result=key; r.querySelector('input').setAttribute('aria-invalid',String(!result[i])); const icon=r.querySelector('.result'); icon.innerHTML=icons[key]; icon.setAttribute('role','img'); icon.setAttribute('aria-label',result[i]?'正解':'不正解'); });
       if(result.every(Boolean)) {
-        status.textContent = ''; progress.solved.push(data.id); save();
+        status.textContent = ''; progress.answers[data.id] = inputs.map(input => input.value);
+        progress.solved.push(data.id); save();
         submit.hidden = true; inputs.forEach(i=>i.readOnly=true); complete(true);
         return;
       }
       status.textContent = '';
     } catch { status.textContent = '判定できませんでした。もう一度お試しください。'; }
-    finally { if(!progress.solved.includes(data.id)) { busy=false; inputs.forEach(i=>i.readOnly=false); submit.firstChild.textContent='回答する'; refresh(); } }
+    finally { if(!progress.solved.includes(data.id)) { busy=false; inputs.forEach(i=>i.readOnly=false); submit.firstChild.textContent='解答する'; refresh(); } }
   });
   section.append(form);
 }
@@ -242,7 +262,8 @@ async function renderStep(id, scroll = true) {
     completion.append(next,status); section.append(completion);
     if(animate) { completion.classList.add('reveal'); completion.scrollIntoView({behavior:reducedMotion.matches?'instant':'smooth',block:'nearest'}); }
   };
-  if(progress.solved.includes(id)) complete(); else renderForm(data,section,complete);
+  renderForm(data,section,complete);
+  if(progress.solved.includes(id)) complete();
   $('#journey').append(section); rendered.add(id); show(section,scroll);
   if(progress.solved.includes(id) && progress.opened.includes(id)) { if(data.next) await renderStep(data.next,false); else renderClear(false); }
 }
@@ -269,6 +290,7 @@ async function init() {
     try { const saved=JSON.parse(localStorage.getItem(storageKey));
       if(saved && typeof saved.started==='boolean' && typeof saved.begun==='boolean' && Array.isArray(saved.solved) && Array.isArray(saved.opened)) progress=saved;
     } catch {}
+    if (!progress.answers || typeof progress.answers !== 'object' || Array.isArray(progress.answers)) progress.answers = {};
     document.title=content.title;
     $('#journey').replaceChildren(); rendered.clear();
     textObserver.disconnect();
