@@ -32,3 +32,19 @@ h1{font-size:clamp(28px,8vw,46px);overflow-wrap:anywhere}
 .story-dialogue::before{content:'';position:absolute;left:-7px;top:22px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--sub);border-bottom:1px solid var(--sub);transform:rotate(45deg)}
 
 .answer-form .primary:disabled{background:var(--step);color:var(--step-ink);border-color:transparent}
+
+/* Document v2: complete speech bubbles, instruction panels and connected concept panels. */
+.story-notice{background:#fff;border:0;color:var(--step);text-align:center;font-weight:900;padding:18px 16px}
+.chapter[data-number="3"] .story-notice{color:#82731e}
+.bonus .story-notice{color:var(--ink)}
+.concept-panel{background-color:#0d79be;background-image:linear-gradient(#ffffff26 1px,transparent 1px),linear-gradient(90deg,#ffffff26 1px,transparent 1px);background-size:24px 24px;color:#fff;padding:24px clamp(16px,4vw,24px)}
+.concept-item+.concept-item{margin-top:28px}
+.concept-title{font-size:clamp(21px,5.5vw,25px);margin-bottom:12px;color:#fff}
+.concept-item p+p{margin-top:8px}
+.concept-item .area{margin-top:20px;background:#fff}
+.speech-pending{opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
+.speech-pending.speech-visible{opacity:1;transform:none}
+.bonus .chapter-heading{color:var(--ink)}
+@media(prefers-reduced-motion:reduce){.speech-pending{opacity:1;transform:none}}
+
+.bonus .chapter-heading{font-size:clamp(28px,7vw,42px)}.bonus .complete-note{color:var(--ink)}

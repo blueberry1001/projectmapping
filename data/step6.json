@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "SHA-256",
+  "normalization": "nfkc-katakana-space-lower-v2",
+  "id": "step6",
+  "number": 6,
+  "groups": [
+    [
+      "2af2b973d645adf7a95151c96d84810d0c7bafea1f186eb104076d34b556fdb7",
+      "76fd83b65ef85d3011ed3f119552786e4df331b1f140fcb321640dae237be30e",
+      "aace3c86c3fb2328f140046c306e6a192df3f954bafd2653e1380d698db667fa"
+    ],
+    [
+      "638ad02fc58a335c83776d2c189a7fd013b919c2aea5e37be5d5b83cdb692121",
+      "1c7dfda06d72c9ea5064af150c90a7b71ca595ec688ed685ff043feda59598a0",
+      "2cdc6eeb98652ecbce889e840ed2db9f95de2f3bab017c44abe47ff8a1c4c664"
+    ]
+  ],
+  "treasure": null,
+  "next": null
+}

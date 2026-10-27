@@ -1,6 +1,6 @@
 import { normalizeAnswer, checkAnswers, NORMALIZATION } from './shared/answers.mjs';
 const $ = selector => document.querySelector(selector);
-const colors = ['#007c54', '#0072ad', '#c3af37', '#394c5c', '#bb2c18'];
+const colors = ['#077852', '#0d79be', '#bdaa3a', '#554b86', '#ca4465', '#ebebeb'];
 const icons = {
   neutral: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>',
   correct: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
@@ -21,7 +21,6 @@ function save() {
 }
 function show(node, focus = true) {
   if (!focus) return;
-  node.classList.add('reveal');
   requestAnimationFrame(() => { node.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block:'start' });
     const heading = node.querySelector('h2,h3'); if(heading) { heading.tabIndex = -1; heading.focus({preventScroll:true}); }
   });
@@ -35,114 +34,51 @@ function media(config, parent) {
   parent.append(figure);
 }
 
-// Reserve the full text layout, then reveal one block at a time in document order.
-const textQueue = [];
-let activeText = null;
-function advanceText() {
-  if (activeText) return;
-  const job = textQueue.find(item => !item.done);
+// Reveal complete speech bubbles in order; narration and instructions stay immediately visible.
+const speechQueue = [];
+let activeSpeech = null;
+function advanceSpeech() {
+  if (activeSpeech) return;
+  const job = speechQueue.find(item => !item.done);
   if (!job || !job.ready) return;
-  activeText = job;
-  job.node.classList.add('is-reading');
-  const finish = () => {
-    if (job.done) return;
-    clearTimeout(job.timer);
-    job.node.classList.add('is-complete');
-    job.done = true;
-    activeText = null;
-    advanceText();
-  };
-  job.finish = finish;
-  job.node.lastElementChild.addEventListener('animationend', finish, {once:true});
-  // Also complete if animation events are suppressed (background tab or motion setting).
-  job.timer = setTimeout(finish, job.duration + 80);
+  activeSpeech = job;
+  job.node.classList.add('speech-visible');
+  job.timer = setTimeout(() => { job.done=true; activeSpeech=null; advanceSpeech(); }, 320);
 }
-const textObserver = new IntersectionObserver(entries => {
+const speechObserver = new IntersectionObserver(entries => {
   for (const item of entries) {
     if (!item.isIntersecting) continue;
-    const index = textQueue.findIndex(job => job.node === item.target);
-    // Scrolling ahead also schedules preceding blocks, so the queue cannot stall offscreen.
-    for (let i = 0; i <= index; i++) textQueue[i].ready = true;
-    textObserver.unobserve(item.target);
+    const index = speechQueue.findIndex(job => job.node===item.target);
+    for(let i=0;i<=index;i++) speechQueue[i].ready=true;
+    speechObserver.unobserve(item.target);
   }
-  advanceText();
-}, { threshold: 0 });
+  advanceSpeech();
+});
 reducedMotion.addEventListener('change', () => {
   if (!reducedMotion.matches) return;
-  for (const job of textQueue) {
-    clearTimeout(job.timer);
-    job.done = true;
-    job.node.classList.add('is-complete');
-  }
-  activeText = null;
-  textObserver.disconnect();
+  for (const job of speechQueue) { clearTimeout(job.timer);job.done=true;job.node.classList.add('speech-visible'); }
+  activeSpeech=null;speechObserver.disconnect();
 });
-const segmenter = new Intl.Segmenter('ja', { granularity: 'grapheme' });
-function revealText(node, text, animate, colors = []) {
-  const animated = animate && !reducedMotion.matches && !/^\[.*\]$/.test(text);
-  const accessible = el('span', 'sr-only', text);
-  const visual = el('span', 'typed-text');
-  visual.setAttribute('aria-hidden', 'true');
-  const chars = [...segmenter.segment(text)];
-  const interval = Math.min(12, 3000 / Math.max(1, chars.length));
-  chars.forEach(({segment:char,index}, i) => {
-    const span = el('span', animated ? 'typed-char' : '', char);
-    const color = colors.find(range => index >= range.start && index < range.end);
-    if (color) span.style.color = color.color;
-    if (animated) span.style.setProperty('--letter-delay', `${i * interval}ms`);
-    visual.append(span);
-  });
-  node.append(accessible, visual);
-  if (animated && chars.length) {
-    textQueue.push({node:visual, duration:(chars.length - 1) * interval + 1, ready:false, done:false});
-    textObserver.observe(visual);
-  }
-}
 function story(blocks, animate = true) {
-  const body = el('div', 'chapter-body story');
-  for (const block of typeof blocks === 'string' ? [{type:'paragraph', text:blocks}] : blocks) {
-    if (block.type === 'image') { media({src:null,alt:block.text},body); continue; }
-    if (block.type === 'heading') {
-      const heading = el('h3','story-heading');
-      revealText(heading,block.text,animate,block.colors);
-      body.append(heading); continue;
-    }
-    if (block.type === 'list') {
-      const list = el('ul','story-list');
-      for (const value of block.items) {
-        const item=el('li'), data=typeof value==='string'?{text:value}:value;
-        revealText(item,data.text,animate,data.colors); list.append(item);
+  const body=el('div','chapter-body story');
+  for(const block of typeof blocks==='string'?[{type:'paragraph',text:blocks}]:blocks) {
+    if(block.type==='concepts') {
+      const panel=el('div','concept-panel');
+      for(const item of block.items) {
+        const section=el('section','concept-item');
+        section.append(el('h3','concept-title',item.title));
+        for(const text of item.paragraphs) section.append(el('p','',text));
+        if(item.image) media(item.image,section);
+        panel.append(section);
       }
-      body.append(list); continue;
+      body.append(panel);continue;
     }
-    // Keep source wording and line breaks; separate speech from narration even in mixed paragraphs.
-    const passages = [];
-    let offset = 0;
-    for (const line of block.text.split('\n')) {
-      const dialogue = line.startsWith('「');
-      const previous = passages.at(-1);
-      if (previous && previous.dialogue === dialogue) previous.text += '\n' + line;
-      else passages.push({text:line, dialogue, offset});
-      offset += line.length + 1;
+    const node=el('p',block.type==='dialogue'?'story-dialogue':block.type==='notice'?'story-notice':'',block.text);
+    if(block.type==='dialogue' && animate && !reducedMotion.matches) {
+      node.classList.add('speech-pending');
+      speechQueue.push({node,ready:false,done:false});speechObserver.observe(node);
     }
-    for (const passage of passages) {
-      const className = passage.dialogue ? 'story-dialogue' : passage.text.startsWith('※') ? 'story-notice' : '';
-      const paragraph = el('p',className);
-      const colors = (block.colors || []).filter(range =>
-        range.end > passage.offset && range.start < passage.offset + passage.text.length
-      ).map(range => ({...range, start:Math.max(0,range.start-passage.offset),
-        end:Math.min(passage.text.length,range.end-passage.offset)}));
-      let text = passage.text;
-      if (passage.dialogue) {
-        const removed = new Set([...text.matchAll(/^「|」$/gm)].map(match => match.index));
-        const offsets = [0];
-        for (let i = 0; i < text.length; i++) offsets.push(offsets[i] + (removed.has(i) ? 0 : 1));
-        text = text.replace(/^「|」$/gm, '');
-        for (const range of colors) { range.start = offsets[range.start]; range.end = offsets[range.end]; }
-      }
-      revealText(paragraph,text,animate,colors);
-      body.append(paragraph);
-    }
+    body.append(node);
   }
   return body;
 }
@@ -244,17 +180,23 @@ async function renderStep(id, scroll = true) {
   const copy = content.steps[id]; if(!copy) throw new Error('content');
   const section = el('section','chapter'); section.id=id; section.dataset.number=data.number;
   section.style.setProperty('--step',colors[(data.number-1)%colors.length]);
-  if(data.number===3) section.style.setProperty('--step-ink','#373431');
-  section.append(el('h2','chapter-heading',`Area${data.number}`),story(copy.body, scroll));
+  if(data.number===3 || data.number===6) section.style.setProperty('--step-ink','#373431');
+  if(data.number===6) section.classList.add('bonus');
+  section.append(el('h2','chapter-heading',`Area${data.number}${data.number===6?'（おまけ）':''}`),story(copy.body, scroll));
   if (copy.headingColor) section.querySelector('h2').style.color=copy.headingColor;
   const complete = (animate = false) => {
     if(section.querySelector('.completion')) return;
     const completion = el('div','completion'); completion.append(el('p','complete-note','正解'));
     if(copy.area) media(copy.area,completion);
+    if (copy.download) {
+      const download = copy.download.url ? el('a','pending-link','A4印刷用データ') : el('p','pending-link',copy.download.label);
+      if(copy.download.url) { download.href=copy.download.url;download.download=''; }
+      completion.append(download);section.append(completion);return;
+    }
     const status = el('p','form-status'); status.setAttribute('role','status');
     const next = button('次へ',async()=>{
       next.disabled = true; status.textContent='';
-      try { if(data.next) await renderStep(data.next,true); else renderClear(true);
+      try { if(data.next) await renderStep(data.next,true); else await renderClear(true);
         progress.opened.push(data.id); save(); next.hidden=true;
       } catch { status.textContent='読み込めませんでした。もう一度お試しください。';next.disabled=false; }
     },'primary continue');
@@ -265,20 +207,31 @@ async function renderStep(id, scroll = true) {
   renderForm(data,section,complete);
   if(progress.solved.includes(id)) complete();
   $('#journey').append(section); rendered.add(id); show(section,scroll);
-  if(progress.solved.includes(id) && progress.opened.includes(id)) { if(data.next) await renderStep(data.next,false); else renderClear(false); }
+  if(progress.solved.includes(id) && progress.opened.includes(id)) { if(data.next) await renderStep(data.next,false); else if (!copy.download) await renderClear(false); }
 }
-function renderClear(scroll) {
+async function renderClear(scroll) {
   if($('#clear')) return;
   const section = el('section','chapter clear'); section.id='clear';
   section.append(el('h2','clear-title','Epilogue'),story(content.clear.body, scroll));
-  media(content.clear.image,section);
+  if(content.clear.image) media(content.clear.image,section);
   const links = el('div','clear-links');
   for(const [key,label,placeholder] of [['postUrl','クリアをポストする','[クリアポストリンク]'],['surveyUrl','アンケートに答える','[アンケート]']]) {
     const url=content.clear[key];
     if(url && /^https:\/\//.test(url)) { const a=el('a','pending-link',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';links.append(a); }
     else links.append(el('p','pending-link',placeholder));
   }
-  section.append(links);$('#journey').append(section);show(section,scroll);
+  section.append(links);
+  if(content.clear.bonus) {
+    const next=button('おまけに進む',async()=>{
+      next.disabled=true;
+      try { await renderStep(content.clear.bonus,true);progress.bonusStarted=true;save();next.hidden=true; }
+      catch { next.disabled=false;error.textContent='読み込めませんでした。もう一度お試しください。'; }
+    });
+    const error=el('p','form-status');error.setAttribute('role','status');
+    next.hidden=Boolean(progress.bonusStarted);section.append(next,error);
+  }
+  $('#journey').append(section);show(section,scroll);
+  if(progress.bonusStarted && content.clear.bonus) await renderStep(content.clear.bonus,false);
 }
 $('#reset').addEventListener('click',()=>$('#reset-dialog').showModal());
 $('#reset-dialog').addEventListener('close',()=>{ if($('#reset-dialog').returnValue==='reset') { try{localStorage.removeItem(storageKey);}catch{} location.reload(); } });
@@ -293,9 +246,9 @@ async function init() {
     if (!progress.answers || typeof progress.answers !== 'object' || Array.isArray(progress.answers)) progress.answers = {};
     document.title=content.title;
     $('#journey').replaceChildren(); rendered.clear();
-    textObserver.disconnect();
-    for (const job of textQueue) clearTimeout(job.timer);
-    textQueue.length = 0; activeText = null;
+    speechObserver.disconnect();
+    for (const job of speechQueue) clearTimeout(job.timer);
+    speechQueue.length = 0; activeSpeech = null;
     renderIntro(false, !progress.started);
     progress.started = true; save();
     $('#reset').hidden=false;
