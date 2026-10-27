@@ -29,7 +29,7 @@ async function json(path) { const response = await fetch(path, {cache:'no-store'
 function media(config, parent) {
   const figure = el('div', 'area');
   const placeholder = () => figure.replaceChildren(el('div', 'area-placeholder', config.alt));
-  if (config.src) { const img = el('img'); img.alt = config.alt; img.src = config.src; img.addEventListener('error', placeholder, {once:true}); figure.append(img); }
+  if (config.src) { const img = el('img'); img.alt = config.alt; if(config.width && config.height) { img.width=config.width;img.height=config.height; } img.src = config.src; img.addEventListener('error', placeholder, {once:true}); figure.append(img); }
   else placeholder();
   parent.append(figure);
 }
