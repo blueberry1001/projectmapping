@@ -48,3 +48,8 @@ h1{font-size:clamp(28px,8vw,46px);overflow-wrap:anywhere}
 @media(prefers-reduced-motion:reduce){.speech-pending{opacity:1;transform:none}}
 
 .bonus .chapter-heading{font-size:clamp(28px,7vw,42px)}.bonus .complete-note{color:var(--ink)}
+
+/* Persistent hint entry; destination will be supplied later. */
+.hint-button{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:20;display:grid;place-items:center;width:52px;height:52px;padding:0;border:1px solid var(--ink);border-radius:50%;background:var(--accent);color:var(--ink);box-shadow:0 3px 12px #37343126;cursor:default}
+.hint-button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+footer{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
