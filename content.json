@@ -116,8 +116,10 @@
         }
       ],
       "area": {
-        "src": null,
-        "alt": "[Area1配置図の画像]"
+        "src": "./assets/area1-temporary.png",
+        "alt": "Area1の配置図",
+        "width": 1299,
+        "height": 731
       }
     },
     "step2": {
@@ -156,8 +158,10 @@
         }
       ],
       "area": {
-        "src": null,
-        "alt": "[Area2配置図の画像]"
+        "src": "./assets/area2-temporary.png",
+        "alt": "Area2の配置図",
+        "width": 1550,
+        "height": 871
       }
     },
     "step3": {
@@ -192,8 +196,10 @@
         }
       ],
       "area": {
-        "src": null,
-        "alt": "[Area3配置図の画像]"
+        "src": "./assets/area3-temporary.png",
+        "alt": "Area3の配置図",
+        "width": 1056,
+        "height": 594
       }
     },
     "step4": {
@@ -232,8 +238,10 @@
         }
       ],
       "area": {
-        "src": null,
-        "alt": "[Area4配置図の画像]"
+        "src": "./assets/area4-temporary.png",
+        "alt": "Area4の配置図",
+        "width": 1328,
+        "height": 747
       }
     },
     "step5": {
