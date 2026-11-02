@@ -1,7 +1,7 @@
 import {
-  normalizeAnswer,
   checkAnswers,
   NORMALIZATION,
+  normalizeAnswer,
 } from "./shared/answers.mjs";
 const $ = (selector) => document.querySelector(selector);
 const colors = [
@@ -181,7 +181,6 @@ function story(blocks, animate = true) {
         : block.type === "notice"
           ? "story-notice"
           : "",
-
     );
     appendStoryText(node, block);
     if (block.type === "dialogue" && animate && !reducedMotion.matches) {
@@ -234,7 +233,7 @@ function row(index, treasure = false) {
   input.setAttribute("autocapitalize", "off");
   input.setAttribute(
     "aria-label",
-    treasure ? "宝のありか" : `答え ${index + 1}`,
+    treasure ? "構造物全体の中心の部屋の答え" : `答え ${index + 1}`,
   );
   input.enterKeyHint = "next";
   input.required = true;
@@ -252,7 +251,7 @@ function renderForm(data, section, complete) {
   for (let i = 0; i < data.groups.length; i++) fields.append(row(i));
   form.append(fields);
   if (data.treasure) {
-    form.append(el("p", "treasure-label", "宝のありか"));
+    form.append(el("p", "treasure-label", "構造物全体の中心の部屋の答え"));
     form.append(row(data.groups.length, true));
   }
   const rows = [...form.querySelectorAll(".answer-row")],
@@ -573,7 +572,10 @@ init();
 const storyContainer = document.querySelector("main");
 function updateStoryScale() {
   const availableWidth = storyContainer.getBoundingClientRect().width;
-  document.documentElement.style.setProperty("--story-scale", Math.min(1, availableWidth / 544));
+  document.documentElement.style.setProperty(
+    "--story-scale",
+    Math.min(1, availableWidth / 544),
+  );
 }
 updateStoryScale();
 new ResizeObserver(updateStoryScale).observe(storyContainer);
