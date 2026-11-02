@@ -1,16 +1,22 @@
-export const NORMALIZATION = 'nfkc-katakana-space-lower-v2';
+export const NORMALIZATION = "nfkc-katakana-space-lower-v2";
 export function toKatakana(value) {
-  return String(value).normalize('NFKC')
-    .replace(/[\u3041-\u3096\u309D-\u309E]/gu, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+  return String(value)
+    .normalize("NFKC")
+    .replace(/[\u3041-\u3096\u309D-\u309E]/gu, (c) =>
+      String.fromCharCode(c.charCodeAt(0) + 0x60),
+    );
 }
 export function normalizeAnswer(value) {
-  return toKatakana(value).toLowerCase()
-    .replace(/[\s\u200B-\u200D\uFEFF]/gu, '');
+  return toKatakana(value)
+    .toLowerCase()
+    .replace(/[\s\u200B-\u200D\uFEFF]/gu, "");
 }
 export async function hashAnswer(value) {
   const bytes = new TextEncoder().encode(normalizeAnswer(value));
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 // Maximum bipartite matching: one answer group can satisfy only one input.
 export function matchHashes(hashes, groups) {
@@ -29,8 +35,17 @@ export function matchHashes(hashes, groups) {
   hashes.forEach((_, i) => assign(i, new Set()));
   return hashes.map((_, i) => owners.includes(i));
 }
-export async function checkAnswers(values, groups, treasureValue, treasureHashes) {
-  const matched = matchHashes(await Promise.all(values.map(hashAnswer)), groups);
-  if (treasureHashes) matched.push(treasureHashes.includes(await hashAnswer(treasureValue)));
+export async function checkAnswers(
+  values,
+  groups,
+  treasureValue,
+  treasureHashes,
+) {
+  const matched = matchHashes(
+    await Promise.all(values.map(hashAnswer)),
+    groups,
+  );
+  if (treasureHashes)
+    matched.push(treasureHashes.includes(await hashAnswer(treasureValue)));
   return matched;
 }
