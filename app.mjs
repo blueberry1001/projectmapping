@@ -162,8 +162,8 @@ function story(blocks, animate = true) {
       const panel = el("div", "concept-panel");
       for (const item of block.items) {
         const section = el("section", "concept-item");
-        section.append(el("h3", "concept-title", item.title));
-        for (const text of item.paragraphs) {
+        if (item.title) section.append(el("h3", "concept-title", item.title));
+        for (const text of item.paragraphs ?? []) {
           const paragraph = el("p");
           appendStoryText(paragraph, text);
           section.append(paragraph);
@@ -227,6 +227,7 @@ function row(index, treasure = false) {
   const wrap = el("div", "answer-row" + (treasure ? " treasure" : ""));
   const input = el("input");
   input.type = "text";
+  input.placeholder = "かなで入力";
   input.maxLength = 100;
   input.autocomplete = "off";
   input.spellcheck = false;
