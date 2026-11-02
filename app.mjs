@@ -535,3 +535,12 @@ async function init() {
 }
 $("#retry").addEventListener("click", init);
 init();
+
+// 固定幅の本文を表示領域に合わせて縮尺する。入力欄は縮尺の対象外。
+const storyContainer = document.querySelector("main");
+function updateStoryScale() {
+  const availableWidth = storyContainer.getBoundingClientRect().width;
+  document.documentElement.style.setProperty("--story-scale", availableWidth / 351);
+}
+updateStoryScale();
+new ResizeObserver(updateStoryScale).observe(storyContainer);

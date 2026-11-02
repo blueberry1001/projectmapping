@@ -738,52 +738,23 @@ footer {
   pointer-events: none;
 }
 
-/* スマホは390px幅を基準に、本文と左右の余白を同じ比率で縮尺する。
-   入力欄はiPhoneの自動ズームを防ぐため、既存の16pxを維持する。 */
-@media (max-width: 430px) {
-  body {
-    padding-inline: 5vw;
-    padding-left: max(5vw, env(safe-area-inset-left));
-    padding-right: max(5vw, env(safe-area-inset-right));
+/* 本文は固定幅で組み、全体を縮小する。画面幅で改行位置を変えない。 */
+@media (max-width: 600px) {
+  .story {
+    width: 351px;
+    zoom: var(--story-scale, 1);
+    gap: 20px;
   }
-
   .story p,
   .story li {
-    font-size: 4.102564vw; /* 390px幅で16px */
+    font-size: 16px;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
   }
-
-  .chapter-heading,
-  .clear-title {
-    font-size: 11vw;
-  }
-
-  .bonus .chapter-heading {
-    font-size: 7.7vw;
-  }
-
-  .story-heading {
-    font-size: 5vw;
-  }
-
-  .concept-title {
-    font-size: 5.5vw;
-    margin-bottom: 3.076923vw;
-  }
-
-  .story-dialogue {
-    margin-left: 2.051282vw;
-    padding: 3.5vw;
-  }
-
-  .story-notice {
-    padding: 4.615385vw 4.102564vw;
-  }
-
-  .concept-panel {
-    padding: 6.153846vw 4.102564vw;
-  }
-
-  .story-list {
-    padding-left: 5.74359vw;
-  }
+  .story-heading { font-size: 19.5px; }
+  .concept-title { font-size: 21.45px; margin-bottom: 12px; }
+  .story-dialogue { margin-left: 8px; padding: 13.65px; }
+  .story-notice { padding: 18px 16px; }
+  .concept-panel { padding: 24px 16px; }
+  .story-list { padding-left: 22.4px; }
 }
