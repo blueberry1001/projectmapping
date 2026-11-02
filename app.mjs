@@ -41,7 +41,7 @@ const el = (tag, className, text) => {
 function button(label, fn, className = "primary") {
   const node = el("button", className, label);
   node.type = "button";
-  if (className.includes("primary")) node.append(el("span", "arrow"));
+  if (className.includes("primary")) node.append(el("span", "arrow", "→"));
   node.addEventListener("click", fn);
   return node;
 }
@@ -125,6 +125,23 @@ reducedMotion.addEventListener("change", () => {
   activeSpeech = null;
   speechObserver.disconnect();
 });
+// 文字列はそのまま表示。装飾する部分は { text, bold, underline } で指定する。
+// 配列にすると、一文の中で装飾あり・なしを混在できる。HTMLは解釈しない。
+function appendStoryText(parent, value) {
+  if (Array.isArray(value)) {
+    for (const part of value) appendStoryText(parent, part);
+    return;
+  }
+  if (typeof value === "string") {
+    parent.append(document.createTextNode(value));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  const span = el(value.bold ? "strong" : "span");
+  if (value.underline === "red") span.classList.add("red-underline");
+  appendStoryText(span, value.text);
+  parent.append(span);
+}
 // content.json のブロック種別に応じて本文を組み立てる。
 function story(blocks, animate = true) {
   const body = el("div", "chapter-body story");
@@ -136,7 +153,11 @@ function story(blocks, animate = true) {
       for (const item of block.items) {
         const section = el("section", "concept-item");
         section.append(el("h3", "concept-title", item.title));
-        for (const text of item.paragraphs) section.append(el("p", "", text));
+        for (const text of item.paragraphs) {
+          const paragraph = el("p");
+          appendStoryText(paragraph, text);
+          section.append(paragraph);
+        }
         if (item.image) media(item.image, section);
         panel.append(section);
       }
@@ -150,8 +171,9 @@ function story(blocks, animate = true) {
         : block.type === "notice"
           ? "story-notice"
           : "",
-      block.text,
+
     );
+    appendStoryText(node, block);
     if (block.type === "dialogue" && animate && !reducedMotion.matches) {
       node.classList.add("speech-pending");
       speechQueue.push({ node, ready: false, done: false });
@@ -172,7 +194,7 @@ function renderIntro(scroll = true, animate = scroll) {
   );
   if (content.introductionColor)
     section.querySelector("h2").style.color = content.introductionColor;
-  const start = button("謎解きをはじめる", async () => {
+  const start = button("任務を始める", async () => {
     start.disabled = true;
     try {
       await renderStep(entry.first, true);
@@ -232,7 +254,7 @@ function renderForm(data, section, complete) {
   inputs.forEach((input) => input.setAttribute("aria-describedby", status.id));
   const submit = el("button", "primary", "解答する");
   submit.type = "submit";
-  submit.append(el("span", "arrow"));
+  submit.append(el("span", "arrow", "→"));
   form.append(status, submit);
   if (progress.solved.includes(data.id)) {
     const saved = progress.answers[data.id];

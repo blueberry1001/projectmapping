@@ -183,30 +183,12 @@ p {
   border-color: var(--sub);
 }
 .arrow {
-  width: 20px;
-  height: 12px;
   position: absolute;
   right: 22px;
-  top: calc(50% - 6px);
-}
-.arrow:before {
-  content: "";
-  position: absolute;
-  width: 20px;
-  height: 2px;
-  background: currentColor;
-  top: 5px;
-}
-.arrow:after {
-  content: "";
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  right: 0;
-  top: 1px;
-  border-top: 2px solid currentColor;
-  border-right: 2px solid currentColor;
-  transform: rotate(45deg);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  line-height: 1;
 }
 .chapter {
   padding-top: 64px;
@@ -750,9 +732,34 @@ footer {
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
 }
-.story-heading { font-size: 21px; }
-.concept-title { font-size: 25px; margin-bottom: 12px; }
-.story-dialogue { margin-left: 8px; padding: 16px; }
-.story-notice { padding: 18px 16px; }
-.concept-panel { padding: 24px; }
-.story-list { padding-left: 22.4px; }
+.story-heading {
+  font-size: 21px;
+}
+.concept-title {
+  font-size: 25px;
+  margin-bottom: 12px;
+}
+.story-dialogue {
+  margin-left: 8px;
+  padding: 16px;
+}
+.story-notice {
+  padding: 18px 16px;
+}
+.concept-panel {
+  padding: 24px;
+}
+.story-list {
+  padding-left: 22.4px;
+}
+/* content.jsonの文字装飾。改行した場合も各行に下線を表示する。 */
+.story strong {
+  font-weight: 900;
+}
+.red-underline {
+  text-decoration-line: underline;
+  text-decoration-color: #df382e;
+  text-decoration-thickness: 3.5px;
+  text-underline-offset: 0em;
+  text-decoration-skip-ink: none;
+}
