@@ -295,8 +295,10 @@
         }
       ],
       "area": {
-        "src": null,
-        "alt": "[構造物全体の画像]"
+        "src": "./assets/structure-overview.png",
+        "alt": "構造物全体の配置図",
+        "width": 2856,
+        "height": 2544
       },
       "download": {
         "url": null,
