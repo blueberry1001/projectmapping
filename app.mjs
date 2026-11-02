@@ -180,6 +180,8 @@ function story(blocks, animate = true) {
         ? "story-dialogue"
         : block.type === "notice"
           ? "story-notice"
+          : block.type === "interlude"
+            ? "story-interlude"
           : "",
     );
     appendStoryText(node, block);

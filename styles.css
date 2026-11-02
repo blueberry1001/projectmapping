@@ -770,3 +770,13 @@ footer {
 .completion > .area {
   margin-top: 0;
 }
+/* 場面転換・時間経過の表示（content.json: type = interlude）。 */
+.story-interlude {
+  font-weight: 900;
+  text-align: center;
+}
+.story p.story-interlude {
+  font-weight: 900;
+  text-align: center;
+  font-size: 20px;
+}
