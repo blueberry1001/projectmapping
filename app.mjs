@@ -540,7 +540,7 @@ init();
 const storyContainer = document.querySelector("main");
 function updateStoryScale() {
   const availableWidth = storyContainer.getBoundingClientRect().width;
-  document.documentElement.style.setProperty("--story-scale", availableWidth / 351);
+  document.documentElement.style.setProperty("--story-scale", Math.min(1, availableWidth / 544));
 }
 updateStoryScale();
 new ResizeObserver(updateStoryScale).observe(storyContainer);

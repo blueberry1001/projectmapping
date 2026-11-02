@@ -738,23 +738,21 @@ footer {
   pointer-events: none;
 }
 
-/* 本文は固定幅で組み、全体を縮小する。画面幅で改行位置を変えない。 */
-@media (max-width: 600px) {
-  .story {
-    width: 351px;
-    zoom: var(--story-scale, 1);
-    gap: 20px;
-  }
-  .story p,
-  .story li {
-    font-size: 16px;
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
-  }
-  .story-heading { font-size: 19.5px; }
-  .concept-title { font-size: 21.45px; margin-bottom: 12px; }
-  .story-dialogue { margin-left: 8px; padding: 13.65px; }
-  .story-notice { padding: 18px 16px; }
-  .concept-panel { padding: 24px 16px; }
-  .story-list { padding-left: 22.4px; }
+/* PCの本文幅544pxを基準に、全画面幅で同じ改行位置のまま縮小する。 */
+.story {
+  width: 544px;
+  zoom: var(--story-scale, 1);
+  gap: 24px;
 }
+.story p,
+.story li {
+  font-size: 16px;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+.story-heading { font-size: 21px; }
+.concept-title { font-size: 25px; margin-bottom: 12px; }
+.story-dialogue { margin-left: 8px; padding: 16px; }
+.story-notice { padding: 18px 16px; }
+.concept-panel { padding: 24px; }
+.story-list { padding-left: 22.4px; }
