@@ -75,6 +75,10 @@ async function json(path) {
 }
 function media(config, parent) {
   const figure = el("div", "area");
+  if (config.displayWidth) {
+    figure.style.width = config.displayWidth;
+    figure.style.marginInline = "auto";
+  }
   const placeholder = () =>
     figure.replaceChildren(el("div", "area-placeholder", config.alt));
   if (config.src) {
@@ -158,6 +162,10 @@ function story(blocks, animate = true) {
   for (const block of typeof blocks === "string"
     ? [{ type: "paragraph", text: blocks }]
     : blocks) {
+    if (block.type === "image") {
+      media(block, body);
+      continue;
+    }
     if (block.type === "concepts") {
       const panel = el("div", "concept-panel");
       for (const item of block.items) {
