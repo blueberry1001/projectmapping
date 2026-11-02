@@ -125,15 +125,25 @@ reducedMotion.addEventListener("change", () => {
   activeSpeech = null;
   speechObserver.disconnect();
 });
-// 文字列はそのまま表示。装飾する部分は { text, bold, underline } で指定する。
-// 配列にすると、一文の中で装飾あり・なしを混在できる。HTMLは解釈しない。
+// **太字**、__赤い下線__ を表示する。従来のオブジェクト形式にも対応。
+// HTMLは解釈せず、安全なテキストと装飾用の要素だけを生成する。
 function appendStoryText(parent, value) {
   if (Array.isArray(value)) {
     for (const part of value) appendStoryText(parent, part);
     return;
   }
   if (typeof value === "string") {
-    parent.append(document.createTextNode(value));
+    const pattern = /(\*\*|__)([\s\S]+?)\1/g;
+    let cursor = 0;
+    for (const match of value.matchAll(pattern)) {
+      parent.append(document.createTextNode(value.slice(cursor, match.index)));
+      const span = el(match[1] === "**" ? "strong" : "span");
+      if (match[1] === "__") span.classList.add("red-underline");
+      appendStoryText(span, match[2]);
+      parent.append(span);
+      cursor = match.index + match[0].length;
+    }
+    parent.append(document.createTextNode(value.slice(cursor)));
     return;
   }
   if (!value || typeof value !== "object") return;
