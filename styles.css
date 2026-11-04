@@ -780,3 +780,28 @@ footer {
   text-align: center;
   font-size: 20px;
 }
+
+/* Area6の灰色はベース背景・白背景でも読みやすい濃さにする。 */
+.bonus { --bonus-ink: #626262; color: var(--bonus-ink); }
+.bonus .chapter-heading,
+.bonus .complete-note,
+.bonus .story-notice { color: var(--bonus-ink); }
+.bonus .answer-row input { color: var(--bonus-ink); }
+.bonus .primary,
+.bonus .primary:disabled { background: #626262; color: #fff; }
+.area-hint-link { display: block; text-align: center; margin-top: 16px; font-size: 16px; }
+.hint-launcher {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.hint-launcher .hint-button { position: static; cursor: pointer; }
+.hint-caption, .hint-warning { background: var(--base); padding-inline: 3px; line-height: 1.4; }
+.hint-caption { font-size: 13px; font-weight: 900; }
+.hint-warning { font-size: 10px; }

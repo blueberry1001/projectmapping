@@ -236,7 +236,7 @@ function row(index, treasure = false) {
   const wrap = el("div", "answer-row" + (treasure ? " treasure" : ""));
   const input = el("input");
   input.type = "text";
-  input.placeholder = "かなで入力";
+  input.placeholder = "答えを入力";
   input.maxLength = 100;
   input.autocomplete = "off";
   input.spellcheck = false;
@@ -276,6 +276,13 @@ function renderForm(data, section, complete) {
   submit.type = "submit";
   submit.append(el("span", "arrow", "→"));
   form.append(status, submit);
+  if (data.number === 6) {
+    const hint = el("a", "area-hint-link", "ヒントはこちら");
+    hint.href = "./hints.html?area=6";
+    hint.target = "_blank";
+    hint.rel = "noopener";
+    form.append(hint);
+  }
   if (progress.solved.includes(data.id)) {
     const saved = progress.answers[data.id];
     const hasAnswers =
@@ -409,7 +416,7 @@ async function renderStep(id, scroll = true) {
     el(
       "h2",
       "chapter-heading",
-      `Area${data.number}${data.number === 6 ? "（おまけ）" : ""}`,
+      `Area${data.number}`,
     ),
     story(copy.body, scroll),
   );
