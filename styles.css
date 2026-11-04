@@ -660,12 +660,9 @@ h1 {
   color: var(--ink);
 }
 
-/* Persistent hint entry; destination will be supplied later. */
+/* ヒントの電球アイコン。固定位置は親リンクで管理する。 */
 .hint-button {
-  position: fixed;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 20;
+  position: static;
   display: grid;
   place-items: center;
   width: 52px;
@@ -790,18 +787,28 @@ footer {
 .bonus .primary,
 .bonus .primary:disabled { background: #626262; color: #fff; }
 .area-hint-link { display: block; text-align: center; margin-top: 16px; font-size: 16px; }
+/* 電球とラベルを一組として右下に固定。 */
 .hint-launcher {
   position: fixed;
-  right: max(12px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
+  inset: auto max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) auto;
   z-index: 20;
-  display: grid;
-  justify-items: center;
-  gap: 3px;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
   text-decoration: none;
   color: var(--ink);
 }
-.hint-launcher .hint-button { position: static; cursor: pointer; }
-.hint-caption, .hint-warning { background: var(--base); padding-inline: 3px; line-height: 1.4; }
-.hint-caption { font-size: 13px; font-weight: 900; }
-.hint-warning { font-size: 10px; }
+.hint-launcher .hint-button { flex: none; cursor: pointer; }
+.hint-caption {
+  display: block;
+  background: var(--base);
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.4;
+  white-space: nowrap;
+}
