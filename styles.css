@@ -714,10 +714,10 @@ footer {
   pointer-events: none;
 }
 
-/* PCの本文幅544pxを基準に、全画面幅で同じ改行位置のまま縮小する。 */
+/* 本文の外幅をセクションに揃え、縮小せず読みやすい文字サイズを保つ。 */
 .story {
-  width: 544px;
-  zoom: var(--story-scale, 1);
+  width: 100%;
+  min-width: 0;
   gap: 24px;
 }
 .story p,
