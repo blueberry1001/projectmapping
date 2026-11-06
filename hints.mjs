@@ -50,6 +50,10 @@ try {
       details.append(node('summary', problem.title));
       const items = node('div', '', 'hint-items');
       for (const item of problem.items) {
+        if (!item.label) {
+          items.append(node("p", item.text, "hint-text"));
+          continue;
+        }
         const hint = node('details', '', `hint-item${item.answer ? ' answer' : ''}`);
         hint.append(node('summary', item.label), node('p', item.text));
         items.append(hint);

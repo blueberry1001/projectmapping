@@ -23,7 +23,7 @@ details[open] > summary::after { content: '−'; }
 .hint-item { margin-top: 8px; background: #f8f5ef; }
 .hint-item summary { padding-left: 16px; padding-right: 40px; font-size: 15px; }
 .hint-item summary::after { right: 16px; }
-.hint-item p { margin: 0; padding: 0 16px 20px; font-size: 16px; line-height: 1.9; white-space: pre-line; overflow-wrap: anywhere; }
+.hint-text, .hint-item p { margin: 0; padding: 0 16px 20px; font-size: 16px; line-height: 1.9; white-space: pre-line; overflow-wrap: anywhere; }
 .answer summary { text-decoration: underline; text-underline-offset: 4px; }
 :focus-visible { outline: 3px solid #373431; outline-offset: 4px; }
 ::selection { background: #5fc1c7; }
