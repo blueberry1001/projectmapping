@@ -1,0 +1,30 @@
+@font-face { font-family: Zen; src: url('./assets/ZenKakuGothicNew-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Zen; src: url('./assets/ZenKakuGothicNew-Black.ttf') format('truetype'); font-weight: 900; font-display: swap; }
+:root { font-family: Zen, sans-serif; color: #373431; background: #eae5da; --area: #077852; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px max(20px, env(safe-area-inset-right)) 64px max(20px, env(safe-area-inset-left)); }
+main { max-width: 544px; margin-inline: auto; }
+a { color: inherit; text-underline-offset: 4px; }
+.back-link { font-size: 14px; }
+header { margin: 36px 0; }
+.brand { margin: 0 0 4px; font-size: 16px; font-weight: 900; }
+h1 { margin: 0; font-size: 40px; }
+.warning { margin: 12px 0 0; font-size: 14px; }
+.area-picker { display: grid; gap: 8px; margin-bottom: 32px; }
+label { font-size: 14px; }
+select { width: 100%; min-height: 48px; padding: 8px 12px; border: 1px solid #b3a494; border-radius: 0; background: #f8f5ef; color: #373431; font: inherit; font-size: 16px; }
+h2 { color: var(--area); font-size: 30px; border-bottom: 2px solid var(--area); padding-bottom: 12px; margin: 0 0 20px; }
+.problem { border-bottom: 1px solid #b3a494; }
+summary { cursor: pointer; list-style: none; padding: 18px 36px 18px 0; position: relative; font-weight: 900; line-height: 1.6; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; position: absolute; right: 4px; top: 16px; font-size: 24px; line-height: 1; }
+details[open] > summary::after { content: '−'; }
+.hint-items { padding: 0 0 24px; }
+.hint-item { margin-top: 8px; background: #f8f5ef; }
+.hint-item summary { padding-left: 16px; padding-right: 40px; font-size: 15px; }
+.hint-item summary::after { right: 16px; }
+.hint-item p { margin: 0; padding: 0 16px 20px; font-size: 16px; line-height: 1.9; white-space: pre-line; overflow-wrap: anywhere; }
+.answer summary { text-decoration: underline; text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid #373431; outline-offset: 4px; }
+::selection { background: #5fc1c7; }
+#hint-status:empty { display: none; }

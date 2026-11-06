@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#eae5da" />
+    <title>ヒント | Projectmapping</title>
+    <link rel="stylesheet" href="./hints.css" />
+    <script type="module" src="./hints.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <a class="back-link" href="./index.html">← 本編へ</a>
+      <header>
+        <p class="brand">Projectmapping</p>
+        <h1>ヒント</h1>
+      </header>
+      <div class="area-picker">
+        <label for="area-select">Areaを選ぶ</label>
+        <select id="area-select" disabled></select>
+      </div>
+      <p id="hint-status" role="status">読み込み中…</p>
+      <section id="hint-page" aria-labelledby="area-title"></section>
+      <noscript>ヒントを表示するにはJavaScriptを有効にしてください。</noscript>
+    </main>
+  </body>
+</html>
