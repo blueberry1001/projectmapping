@@ -55,7 +55,17 @@ try {
           continue;
         }
         const hint = node('details', '', `hint-item${item.answer ? ' answer' : ''}`);
-        hint.append(node('summary', item.label), node('p', item.text));
+        hint.append(node('summary', item.label));
+        if (item.text) hint.append(node('p', item.text));
+        if (item.image) {
+          const image = node('img', '', 'hint-image');
+          image.src = item.image.src;
+          image.alt = item.image.alt;
+          image.width = item.image.width;
+          image.height = item.image.height;
+          image.loading = 'lazy';
+          hint.append(image);
+        }
         items.append(hint);
       }
       details.append(items);

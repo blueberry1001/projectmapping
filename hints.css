@@ -33,3 +33,5 @@ details[open] > summary::after { content: '−'; }
 .hint-heading { color: #000; border-bottom-color: #000; }
 .hint-heading .brand-initial--p { color: #dd8100; }
 .hint-heading .brand-initial--m { color: #0f7abf; }
+
+.hint-image { display: block; width: calc(100% - 32px); height: auto; margin: 0 16px 20px; }

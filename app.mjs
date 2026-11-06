@@ -434,7 +434,10 @@ async function renderStep(id, scroll = true) {
         : el("p", "pending-link", copy.download.label);
       if (copy.download.url) {
         download.href = copy.download.url;
-        download.download = "";
+        if (copy.download.url.startsWith("https://")) {
+          download.target = "_blank";
+          download.rel = "noopener noreferrer";
+        } else download.download = "";
       }
       completion.append(download);
       section.append(completion);

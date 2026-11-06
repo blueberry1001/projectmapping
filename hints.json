@@ -855,7 +855,12 @@
           "items": [
             {
               "label": "これまでの様子",
-              "text": "[画像]"
+              "image": {
+                "src": "./assets/algoPM_66_v1.png",
+                "alt": "これまでの様子：構造物全体の配置図",
+                "width": 7087,
+                "height": 7088
+              }
             },
             {
               "label": "針が指す部屋",
