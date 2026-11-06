@@ -190,7 +190,7 @@ function story(blocks, animate = true) {
           ? "story-notice"
           : block.type === "interlude"
             ? "story-interlude"
-          : "",
+            : "",
     );
     appendStoryText(node, block);
     if (block.type === "dialogue" && animate && !reducedMotion.matches) {
@@ -418,11 +418,7 @@ async function renderStep(id, scroll = true) {
     section.style.setProperty("--step-ink", "#373431");
   if (data.number === 6) section.classList.add("bonus");
   section.append(
-    el(
-      "h2",
-      "chapter-heading",
-      `Area${data.number}`,
-    ),
+    el("h2", "chapter-heading", `Area${data.number}`),
     story(copy.body, scroll),
   );
   if (copy.headingColor)
@@ -497,12 +493,22 @@ async function renderClear(scroll) {
   if (content.clear.image) media(content.clear.image, section);
   const links = el("div", "clear-links");
   for (const [key, label, placeholder] of [
-    ["postUrl", "Xでクリアをポストする", "[クリアポストリンク]"],
+    ["postUrl", "クリアをポストする", "[クリアポストリンク]"],
     ["surveyUrl", "アンケートに答える", "[アンケート]"],
   ]) {
     const url = content.clear[key];
     if (url && /^https:\/\//.test(url)) {
-      const a = el("a", "pending-link", label);
+      const a = el("a", "primary clear-action");
+      a.classList.add(
+        key === "postUrl" ? "clear-action--x" : "clear-action--survey",
+      );
+      if (key === "postUrl") {
+        const icon = el("span", "clear-action-icon");
+        icon.innerHTML =
+          '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.64 7.584H.47l8.6-9.835L0 1.154h7.594l5.243 6.932 6.064-6.933Zm-1.29 19.49h2.039L6.487 3.24H4.3l13.311 17.403Z"/></svg>';
+        a.append(icon);
+      }
+      a.append(el("span", "clear-action-label", label));
       a.href = url;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
@@ -589,4 +595,3 @@ async function init() {
 }
 $("#retry").addEventListener("click", init);
 init();
-

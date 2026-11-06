@@ -330,6 +330,35 @@ p {
   display: grid;
   gap: 12px;
 }
+/* Epilogueの外部リンクも、解答ボタンと同じ全幅にする。 */
+.clear-action {
+  gap: 12px;
+  padding-inline: 20px;
+  text-decoration: none;
+  text-align: center;
+}
+.clear-action--x {
+  font-weight: 400;
+  color: #fff;
+  background: #000;
+}
+.clear-action--survey {
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--accent);
+}
+.clear-action-icon {
+  display: flex;
+  flex: 0 0 20px;
+}
+.clear-action-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.clear-action:focus-visible {
+  outline-color: var(--ink);
+}
 .pending-link {
   border-bottom: 1px solid var(--sub);
   padding: 14px 0;
