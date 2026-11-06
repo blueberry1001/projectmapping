@@ -291,7 +291,7 @@ function renderForm(data, section, complete) {
       const icon = rows[i].querySelector(".result");
       icon.innerHTML = icons.correct;
       icon.setAttribute("role", "img");
-      icon.setAttribute("aria-label", "正解");
+      icon.setAttribute("aria-label", "分析完了");
     });
     if (!hasAnswers)
       status.textContent = "この端末には以前の解答が保存されていません。";
@@ -368,7 +368,7 @@ function renderForm(data, section, complete) {
         const icon = r.querySelector(".result");
         icon.innerHTML = icons[key];
         icon.setAttribute("role", "img");
-        icon.setAttribute("aria-label", result[i] ? "正解" : "不正解");
+        icon.setAttribute("aria-label", result[i] ? "分析完了" : "不正解");
       });
       if (result.every(Boolean)) {
         status.textContent = "";
@@ -426,7 +426,7 @@ async function renderStep(id, scroll = true) {
   const complete = (animate = false) => {
     if (section.querySelector(".completion")) return;
     const completion = el("div", "completion");
-    completion.append(el("p", "complete-note", "正解"));
+    completion.append(el("p", "complete-note", "分析完了"));
     if (copy.area) media(copy.area, completion);
     if (copy.download) {
       const download = copy.download.url

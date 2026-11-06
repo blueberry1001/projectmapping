@@ -28,3 +28,8 @@ details[open] > summary::after { content: '−'; }
 :focus-visible { outline: 3px solid #373431; outline-offset: 4px; }
 ::selection { background: #5fc1c7; }
 #hint-status:empty { display: none; }
+
+/* タイトルはAreaの配色と分け、頭文字だけを強調する。 */
+.hint-heading { color: #000; border-bottom-color: #000; }
+.hint-heading .brand-initial--p { color: #dd8100; }
+.hint-heading .brand-initial--m { color: #0f7abf; }
