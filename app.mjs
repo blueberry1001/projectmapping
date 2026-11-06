@@ -429,7 +429,7 @@ async function renderStep(id, scroll = true) {
     if (copy.area) media(copy.area, completion);
     if (copy.download) {
       const download = copy.download.url
-        ? el("a", "pending-link", "A4印刷用データ")
+        ? el("a", "pending-link", copy.download.label || "印刷用データ")
         : el("p", "pending-link", copy.download.label);
       if (copy.download.url) {
         download.href = copy.download.url;

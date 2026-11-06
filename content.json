@@ -77,10 +77,10 @@
           "items": [
             {
               "image": {
-                "src": "./assets/compass-reference.png",
+                "src": "./assets/compass-explanation.png",
                 "alt": "方位磁針は赤い針の方向に接する部屋の答えを参照する。離れた部屋の答えは参照しない。",
-                "width": 1289,
-                "height": 729
+                "width": 3508,
+                "height": 2481
               }
             },
             {
@@ -105,10 +105,10 @@
         }
       ],
       "area": {
-        "src": "./assets/area1-temporary.png",
+        "src": "./assets/area1.png",
         "alt": "Area1の配置図",
-        "width": 1299,
-        "height": 731
+        "width": 4300,
+        "height": 3036
       }
     },
     "step2": {
@@ -143,10 +143,10 @@
         }
       ],
       "area": {
-        "src": "./assets/area2-temporary.png",
+        "src": "./assets/area2.png",
         "alt": "Area2の配置図",
-        "width": 1550,
-        "height": 871
+        "width": 6083,
+        "height": 4300
       }
     },
     "step3": {
@@ -177,10 +177,10 @@
         }
       ],
       "area": {
-        "src": "./assets/area3-temporary.png",
+        "src": "./assets/area3.png",
         "alt": "Area3の配置図",
-        "width": 1056,
-        "height": 594
+        "width": 4300,
+        "height": 3036
       }
     },
     "step4": {
@@ -215,10 +215,10 @@
         }
       ],
       "area": {
-        "src": "./assets/area4-temporary.png",
+        "src": "./assets/area4.png",
         "alt": "Area4の配置図",
-        "width": 1328,
-        "height": 747
+        "width": 6083,
+        "height": 4300
       }
     },
     "step5": {
@@ -261,10 +261,10 @@
         }
       ],
       "area": {
-        "src": "./assets/area5-temporary.png",
+        "src": "./assets/area5.png",
         "alt": "Area5の配置図",
-        "width": 1328,
-        "height": 747
+        "width": 6083,
+        "height": 4300
       }
     },
     "step6": {
@@ -295,14 +295,14 @@
         }
       ],
       "area": {
-        "src": "./assets/structure-overview.png",
+        "src": "./assets/structure-complete.png",
         "alt": "構造物全体の配置図",
-        "width": 2856,
-        "height": 2544
+        "width": 7087,
+        "height": 7088
       },
       "download": {
-        "url": null,
-        "label": "[A4印刷用データ]"
+        "url": "./assets/structure-print.png",
+        "label": "印刷用データ"
       }
     }
   },
@@ -331,6 +331,12 @@
     ],
     "postUrl": null,
     "surveyUrl": null,
-    "bonus": "step6"
+    "bonus": "step6",
+    "image": {
+      "alt": "Projectmapping — Mapping Complete!",
+      "src": "./assets/clear.png",
+      "width": 6667,
+      "height": 3750
+    }
   }
 }
