@@ -276,13 +276,6 @@ function renderForm(data, section, complete) {
   submit.type = "submit";
   submit.append(el("span", "arrow", "→"));
   form.append(status, submit);
-  if (data.number === 6) {
-    const hint = el("a", "area-hint-link", "ヒントはこちら");
-    hint.href = "./hints.html?area=6";
-    hint.target = "_blank";
-    hint.rel = "noopener";
-    form.append(hint);
-  }
   if (progress.solved.includes(data.id)) {
     const saved = progress.answers[data.id];
     const hasAnswers =
@@ -318,6 +311,18 @@ function renderForm(data, section, complete) {
   form.addEventListener("compositionend", () => {
     composing = false;
     refresh();
+  });
+  // Enterは次の欄へ。最後の欄だけ送信し、日本語変換の確定には反応しない。
+  inputs.forEach((input, index) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      if (event.isComposing || composing || event.keyCode === 229) return;
+      event.preventDefault();
+      if (event.repeat || input.readOnly || busy || submit.disabled) return;
+      const nextInput = inputs[index + 1];
+      if (nextInput) nextInput.focus();
+      else form.requestSubmit(submit);
+    });
   });
   form.addEventListener("input", () => {
     // Unordered matching is collective: editing one row invalidates the previous allocation.
@@ -492,7 +497,7 @@ async function renderClear(scroll) {
   if (content.clear.image) media(content.clear.image, section);
   const links = el("div", "clear-links");
   for (const [key, label, placeholder] of [
-    ["postUrl", "クリアをポストする", "[クリアポストリンク]"],
+    ["postUrl", "Xでクリアをポストする", "[クリアポストリンク]"],
     ["surveyUrl", "アンケートに答える", "[アンケート]"],
   ]) {
     const url = content.clear[key];
